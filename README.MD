@@ -9,10 +9,7 @@
 - возвращение данных пользователя по запросу /users/id
 - возвращение массива карточек по запросу /cards
 - обработка ошибок несуществующий id и несуществующий адрес
-
-
-## Демо
-[ссылка](https://snowsergo.github.io/backend_express/)
+- запросы можно проверить в postman по адресу http://localhost:3000
 
 ## Установка проекта
 
@@ -26,6 +23,14 @@ git clone https://github.com/snowsergo/backend_express.git
 
 ```
 npm i
+```
+
+Отправляйте запросы вида:
+
+```
+http://localhost:3000/users
+http://localhost:3000/cards
+http://localhost:3000/users/id
 ```
 
 ## Работа
