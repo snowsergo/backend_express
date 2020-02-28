@@ -1,8 +1,14 @@
-const router = require('express').Router(); // создали роутер
-const cards= require('../data/cards.json'); // данные нужны для роутинга, поэтому импортируем их
+const router = require('express').Router();
+const fs = require('fs');
+const config = require('../config.js');
 
+const { cardsData } = config;
 router.get('/', (req, res) => {
-  res.send(cards);
+  const reader = fs.createReadStream(cardsData);
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+  });
+  reader.pipe(res);
 });
 
-module.exports = router; // экспортировали роутер
+module.exports = router;
