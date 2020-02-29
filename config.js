@@ -1,6 +1,8 @@
+const path = require('path');
+
 const { PORT = 3000 } = process.env;
-const cardsData = './data/cards.json';
-const usersData = './data/users.json';
+const cardsData = path.join(__dirname, 'data/cards.json');
+const usersData = path.join(__dirname, 'data/users.json');
 
 module.exports = {
   PORT,
