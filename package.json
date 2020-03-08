@@ -19,6 +19,7 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.1",
     "express": "^4.17.1",
+    "mongoose": "^5.9.3",
     "morgan": "^1.9.1"
   }
 }
