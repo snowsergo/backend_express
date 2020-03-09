@@ -13,7 +13,6 @@ const errorMiddleware = require('./middlewares/error.js');
 
 const app = express();
 
-
 // подключаем body-parser как мидлвару всего приложения
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
