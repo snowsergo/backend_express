@@ -23,8 +23,8 @@ module.exports.getAllCards = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   console.log('пришел запрос на удаление карточки');
   Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'При удалении карточки произошла ошибка' }));
+    .then(() => res.status(200).send({ message: 'Карточка удалена' }))
+    .catch(() => res.status(404).send({ message: 'Карточки с таким ID не сущетсвует' }));
 };
 
 // установка лайка
