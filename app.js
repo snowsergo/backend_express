@@ -40,11 +40,14 @@ app.use((req, res, next) => {
 // app.use(express.static(path.join(__dirname, 'public'))); // убрали раздачу статики
 app.use('/users', routerusers); // запускаем
 app.use('/cards', routercards); // запускаем
+
 // запрос на несуществующий адрес
+
 app.all('*', (req, res, next) => next({
   status: 404,
   message: { message: 'Запрашиваемый ресурс не найден' },
 }));
+// app.all('*', (req, res) => res.status(404).send({ message: 'Запрашиваемый ресурс не найден' }));
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
