@@ -29,6 +29,7 @@ app.use(morgan('combined'));
 
 // временное решение для авторизации (для карточек)
 // 5e63a876b704d81c746b9488
+
 app.use((req, res, next) => {
   req.user = {
     _id: '5e63a876b704d81c746b9488',
