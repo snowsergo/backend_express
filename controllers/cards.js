@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const Card = require('../models/card');
 
+
 // создание новой карточки
 module.exports.createCard = (req, res) => {
   console.log('пришел запрос на создание карточки');
@@ -22,12 +23,15 @@ module.exports.getAllCards = (req, res) => {
 // удаление карточки
 module.exports.deleteCard = (req, res) => {
   console.log('пришел запрос на удаление карточки');
-  Card.findByIdAndRemove(req.params.cardId)
-    // .then(() => res.status(200).send({ message: 'Карточка удалена' }))
+  Card.findOne({ _id: req.params.cardId })
     .then((card) => {
-      if (card) {
-        res.status(200).send({ message: 'Карточка удалена' });
-      } res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` });
+      if (!card) {
+        res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` });
+      // eslint-disable-next-line eqeqeq
+      } else if (card.owner == req.user._id) {
+        Card.findByIdAndRemove(req.params.cardId)
+          .then(() => res.status(200).send({ message: 'Карточка удалена' }));
+      } else res.status(500).send({ message: `Ошибка авторизации, нет прав на удаление карточки с ID ${req.params.cardId}` });
     })
     .catch(() => res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` }));
 };

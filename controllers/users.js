@@ -1,12 +1,41 @@
 /* eslint-disable no-console */
+const bcrypt = require('bcryptjs'); // для хеширования пароля
+const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
 
+const { JWT_SECRET } = process.env;
+
+// аутентификация пользователя
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // создадим токен с ключем из переменных окружения
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      res.cookie('jwt', token, { // вернем токен в виде http-куки продолжительность жизни 7 дней
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true, //  защита от CSRF атак («межсайтовая подделка запроса»)
+      })
+        .end(); // если у ответа нет тела, можно использовать метод end
+    // res.send({ token }); // вернём токен
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message }); // ошибка аутентификации
+    });
+};
 
 // создание пользователя
 module.exports.createUser = (req, res) => {
   console.log('пришел запрос на создание пользователя');
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  bcrypt.hash(req.body.password, 10)
+    .then((hash) => User.create({
+      name: req.body.name,
+      about: req.body.about,
+      avatar: req.body.avatar,
+      email: req.body.email,
+      password: hash, // записываем хеш в базу
+    }))
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(500).send({ message: 'При создании пользователя произошла ошибка' }));
 };
