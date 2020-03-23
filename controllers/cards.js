@@ -31,9 +31,9 @@ module.exports.deleteCard = (req, res) => {
       } else if (card.owner == req.user._id) {
         Card.findByIdAndRemove(req.params.cardId)
           .then(() => res.status(200).send({ message: 'Карточка удалена' }));
-      } else res.status(500).send({ message: `Ошибка авторизации, нет прав на удаление карточки с ID ${req.params.cardId}` });
+      } else res.status(403).send({ message: `Ошибка авторизации, нет прав на удаление карточки с ID ${req.params.cardId}` });
     })
-    .catch(() => res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` }));
+    .catch((err) => res.status(500).send({ message: `Ошибка сервера при удалении карточки, ${err.message}` }));
 };
 
 // установка лайка
@@ -50,7 +50,7 @@ module.exports.setLike = (req, res) => {
         res.send({ data: card });
       } res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` });
     })
-    .catch(() => res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` }));
+    .catch((err) => res.status(500).send({ message: `Ошибка сервера при постановке лайка, ${err.message}` }));
 };
 
 // удаление лайка
@@ -67,5 +67,5 @@ module.exports.deleteLike = (req, res) => {
         res.send({ data: card });
       } res.status(404).send({ message: `Карточки с ID ${req.params.cardId} не существует` });
     })
-    .catch(() => res.status(500).send({ message: `Карточки с ID ${req.params.cardId} не существует` }));
+    .catch((err) => res.status(500).send({ message: `Ошибка сервера при удалении лайка, ${err.message}` }));
 };

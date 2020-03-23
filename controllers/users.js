@@ -37,14 +37,18 @@ module.exports.createUser = (req, res) => {
       password: hash, // записываем хеш в базу
     }))
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'При создании пользователя произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(403).send({ message: `Ошибка валидации ${err.message}` });
+      } else res.status(500).send({ message: `При создании пользователя произошла ошибка на сервере ${err.message}` });
+    });
 };
 
 // выдача всех пользователей
 module.exports.getAllUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'При запросе всех пользователей произошла ошибка' }));
+    .catch((err) => res.status(500).send({ message: `При запросе всех пользователей произошла ошибка, ${err.message}` }));
 };
 
 // выдача пользователя по id
@@ -55,7 +59,7 @@ module.exports.getUser = (req, res) => {
         res.send({ data: user });
       } res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` });
     })
-    .catch(() => res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` }));
+    .catch((err) => res.status(500).send({ message: `Ошибка сервера при запросе данных пользователя, ${err.message}` }));
 };
 
 // обновляем данные пользователя
@@ -69,8 +73,10 @@ module.exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, opts)
     .then(() => res.send({ message: 'Данные пользователя обновлены' }))
     .catch((err) => {
-      // console.log(err);
-      res.status(500).send({ message: err.message });
+      console.log(err.name);
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `При обновлении данных пользователя произошла ошибка, ${err.message}` });
+      } else res.status(500).send({ message: `При обновлении данных пользователя произошла ошибка на сервере, ${err.message}` });
     });
 };
 
@@ -79,9 +85,15 @@ module.exports.updateAvatar = (req, res) => {
   console.log('пришел запрос на обновление аватара пользователя');
   const { avatar } = req.body;
   // включил валидацию аватара
-  User.schema.path('avatar').validate((value) => /^https?:\/\/(www\.)?[a-z]+\.[a-z]+(((\/(\d|[a-zA-Z]))((-|=|\?|\.)?([a-zA-Z]|\d))*)+)\.(?:jpg|jpeg|png)$/.test(value), 'Invalid avatar');
+  // eslint-disable-next-line max-len
+  // User.schema.path('avatar').validate((value) => /^https?:\/\/(www\.)?[a-z]+\.[a-z]+(((\/(\d|[a-zA-Z]))((-|=|\?|\.)?([a-zA-Z]|\d))*)+)\.(?:jpg|jpeg|png)$/.test(value), 'Invalid avatar');
   const opts = { runValidators: true };
   User.findByIdAndUpdate(req.user._id, { avatar }, opts)
     .then(() => res.send({ message: 'Аватар пользователя изменен' }))
-    .catch(() => res.status(500).send({ message: `При обновлении аватара произошла ошибка,${avatar} is invalid avatar` }));
+    .catch((err) => {
+      console.log(err.name, err.name === 'ValidationError');
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `При обновлении аватара произошла ошибка,${avatar} is invalid avatar` });
+      } else res.status(500).send({ message: 'При обновлении аватара произошла ошибка на сервере' });
+    });
 };
