@@ -1,5 +1,10 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit'); // ограничени количества запросов
 
+require('dotenv').config(); // модуль для работы с переменными окружения, в них будем хранить ключи
+
+const helmet = require('helmet'); // модуль для простановки заголовков безопасности
+const cookieParser = require('cookie-parser'); // для работы с куками
 const morgan = require('morgan'); // для логов
 const mongoose = require('mongoose'); // для работы с базой данных
 const bodyParser = require('body-parser');// подключили body-parser
@@ -8,10 +13,21 @@ const config = require('./config.js'); //  в этом файле временн
 const { PORT } = config;
 const routerusers = require('./routes/users.js');
 const routercards = require('./routes/cards.js');
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const errorMiddleware = require('./middlewares/error.js');
 
 const app = express();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // за 15 минут
+  max: 100, // можно совершить максимум 100 запросов с одного IP
+});
+
+app.use(cookieParser()); // подключаем парсер кук как мидлвэр
+app.use(limiter); // ограничение на количество запросов
+app.use(helmet()); // подключаем заголовки безопасности
 
 // подключаем body-parser как мидлвару всего приложения
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -27,24 +43,20 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 // логгирование
 app.use(morgan('combined'));
 
-// временное решение для авторизации (для карточек)
-// 5e63a876b704d81c746b9488
+app.post('/signin', login);
+app.post('/signup', createUser);
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '5e63a876b704d81c746b9488',
-  };
-  next();
-});
+app.use(auth);
 
-// app.use(express.static(path.join(__dirname, 'public'))); // убрали раздачу статики
-app.use('/users', routerusers); // запускаем
-app.use('/cards', routercards); // запускаем
+app.use('/users', routerusers);
+app.use('/cards', routercards);
+
 // запрос на несуществующий адрес
 app.all('*', (req, res, next) => next({
   status: 404,
   message: { message: 'Запрашиваемый ресурс не найден' },
 }));
+
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
