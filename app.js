@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser'); // для работы с кук�
 const morgan = require('morgan'); // для логов
 const mongoose = require('mongoose'); // для работы с базой данных
 const bodyParser = require('body-parser');// подключили body-parser
+const { errors, celebrate, Joi } = require('celebrate');
 const config = require('./config.js'); //  в этом файле временная база данных в формате json
 
 const { PORT } = config;
@@ -15,6 +16,8 @@ const routerusers = require('./routes/users.js');
 const routercards = require('./routes/cards.js');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+
 
 const errorMiddleware = require('./middlewares/error.js');
 
@@ -40,11 +43,30 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-// логгирование
+// логгирование в командной строке
 app.use(morgan('combined'));
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+// подключаем логгер запросов в файл
+app.use(requestLogger);
+
+// пользовательский вход, получаем токен
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+
+// создаем нового пользователя
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required().min(12),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), createUser);
 
 app.use(auth);
 
@@ -52,11 +74,26 @@ app.use('/users', routerusers);
 app.use('/cards', routercards);
 
 // запрос на несуществующий адрес
+/*
 app.all('*', (req, res, next) => next({
   status: 404,
   message: { message: 'Запрашиваемый ресурс не найден' },
 }));
 
+*/
+app.all('*', (req, res) => {
+  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+});
+
+// app.all('*', (req, res, next) => next);
+
+// подключаем логгер ошибок в файл
+app.use(errorLogger);
+
+// обработчики ошибок
+app.use(errors()); // обработчик ошибок celebrate
+
+// наш централизованный обработчик
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
