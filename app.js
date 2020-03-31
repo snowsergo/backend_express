@@ -49,6 +49,13 @@ app.use(morgan('combined'));
 // подключаем логгер запросов в файл
 app.use(requestLogger);
 
+// для краш-теста сервера (удалить после ревью)
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
 // пользовательский вход, получаем токен
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -68,7 +75,7 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.use(auth);
+app.use(auth); // аутентификация пользователя перед всеми роутами
 
 app.use('/users', routerusers);
 app.use('/cards', routercards);
@@ -79,7 +86,6 @@ app.all('*', (req, res, next) => next({
   status: 404,
   message: { message: 'Запрашиваемый ресурс не найден' },
 }));
-
 */
 app.all('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
