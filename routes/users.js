@@ -1,10 +1,6 @@
 const router = require('express').Router(); // создали роутер
 const { celebrate, Joi } = require('celebrate'); // подключили валидацию
-// const fs = require('fs');
-// const fsPromises = require('fs').promises;
-// const config = require('../config.js');
 const {
-// createUser,
   getAllUsers, getUser, updateUser, updateAvatar,
 } = require('../controllers/users');
 
@@ -15,8 +11,6 @@ router.get('/:userId', celebrate({
     userId: Joi.string().alphanum().length(24),
   }),
 }), getUser);
-
-// router.post('/', createUser); //   5e63a876b704d81c746b9488 для временного решения
 
 // обновление данных профиля
 router.patch('/me', celebrate({

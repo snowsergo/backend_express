@@ -4,10 +4,10 @@ const jwt = require('jsonwebtoken'); // импортируем модуль json
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-error');
 const AuthError = require('../errors/auth-error');
-const ValidationError = require('../errors/validation-error');
 const ServerError = require('../errors/server-error');
+const { createUserValidation, updateUserValidation, updateAvatarValidation } = require('../validators/validators');
 
-const { JWT_SECRET } = process.env;
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 // аутентификация пользователя
 module.exports.login = (req, res, next) => {
@@ -15,7 +15,7 @@ module.exports.login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       // создадим токен с ключем из переменных окружения
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
       res.cookie('jwt', token, { // вернем токен в виде http-куки продолжительность жизни 7 дней
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
@@ -39,9 +39,7 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError(`Ошибка валидации: ${err.message}`));
-      } next(new ServerError(`При создании пользователя произошла ошибка на сервере: ${err.message}`));
+      createUserValidation(err, next);
     });
 };
 
@@ -71,9 +69,7 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, opts)
     .then(() => res.send({ message: 'Данные пользователя обновлены' }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError(`При обновлении данных пользователя произошла ошибка: ${err.message}`));
-      } next(new ServerError(`При обновлении данных пользователя произошла ошибка на сервере: ${err.message}`));
+      updateUserValidation(err, next);
     });
 };
 
@@ -85,8 +81,6 @@ module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, opts)
     .then(() => res.send({ message: 'Аватар пользователя изменен' }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError(`При обновлении аватара произошла ошибка: ${err.message}`));
-      } next(new ServerError(`При обновлении аватара произошла ошибка на сервере: ${err.message}`));
+      updateAvatarValidation(err, next);
     });
 };

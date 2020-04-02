@@ -8,7 +8,8 @@ const cookieParser = require('cookie-parser'); // для работы с кук�
 const morgan = require('morgan'); // для логов
 const mongoose = require('mongoose'); // для работы с базой данных
 const bodyParser = require('body-parser');// подключили body-parser
-const { errors, celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
+const { userSignin, userSignup } = require('./validators/validators');
 const config = require('./config.js'); //  в этом файле временная база данных в формате json
 
 const { PORT } = config;
@@ -57,41 +58,21 @@ app.get('/crash-test', () => {
 });
 
 // пользовательский вход, получаем токен
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-  }),
-}), login);
+app.post('/signin', userSignin, login);
 
 // создаем нового пользователя
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
-    avatar: Joi.string().required().min(12),
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-  }),
-}), createUser);
+app.post('/signup', userSignup, createUser);
 
-app.use(auth); // аутентификация пользователя перед всеми роутами
+// аутентификация пользователя перед всеми роутами
+app.use(auth);
 
 app.use('/users', routerusers);
 app.use('/cards', routercards);
 
 // запрос на несуществующий адрес
-/*
-app.all('*', (req, res, next) => next({
-  status: 404,
-  message: { message: 'Запрашиваемый ресурс не найден' },
-}));
-*/
 app.all('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
-
-// app.all('*', (req, res, next) => next);
 
 // подключаем логгер ошибок в файл
 app.use(errorLogger);
@@ -99,7 +80,7 @@ app.use(errorLogger);
 // обработчики ошибок
 app.use(errors()); // обработчик ошибок celebrate
 
-// наш централизованный обработчик
+// наш централизованный обработчик ошибок
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

@@ -2,10 +2,10 @@
 const Card = require('../models/card');
 
 const NotFoundError = require('../errors/not-found-error');
-// const AuthError = require('../errors/auth-error');
-const ValidationError = require('../errors/validation-error');
 const ServerError = require('../errors/server-error');
 const AutorError = require('../errors/autor-error');
+const { createCardValidation } = require('../validators/validators');
+
 // создание новой карточки
 module.exports.createCard = (req, res, next) => {
   const owner = req.user._id; // временное решение для авторизации
@@ -13,9 +13,7 @@ module.exports.createCard = (req, res, next) => {
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError(`Ошибка валидации: ${err.message}`));
-      } next(new ServerError(`При создании карточки произошла ошибка на сервере: ${err.message}`));
+      createCardValidation(err, next);
     });
 };
 
@@ -51,7 +49,6 @@ module.exports.setLike = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    // .then((card) => res.send({ data: card }))
     .then((card) => {
       if (card) {
         res.send({ data: card });
@@ -68,7 +65,6 @@ module.exports.deleteLike = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    // .then((card) => res.send({ data: card }))
     .then((card) => {
       if (card) {
         res.send({ data: card });
