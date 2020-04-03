@@ -9,7 +9,7 @@ const morgan = require('morgan'); // для логов
 const mongoose = require('mongoose'); // для работы с базой данных
 const bodyParser = require('body-parser');// подключили body-parser
 const { errors } = require('celebrate');
-const { userSignin, userSignup } = require('./validators/validators');
+const { userSignin, userSignup } = require('./modules/validators');
 const config = require('./config.js'); //  в этом файле временная база данных в формате json
 
 const { PORT } = config;

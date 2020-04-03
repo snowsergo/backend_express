@@ -4,7 +4,7 @@ const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-error');
 const ServerError = require('../errors/server-error');
 const AutorError = require('../errors/autor-error');
-const { createCardValidation } = require('../validators/validators');
+const { createCardHandler } = require('../modules/error-handlers');
 
 // создание новой карточки
 module.exports.createCard = (req, res, next) => {
@@ -13,7 +13,7 @@ module.exports.createCard = (req, res, next) => {
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      createCardValidation(err, next);
+      createCardHandler(err, next);
     });
 };
 

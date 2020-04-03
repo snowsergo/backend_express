@@ -5,7 +5,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-error');
 const AuthError = require('../errors/auth-error');
 const ServerError = require('../errors/server-error');
-const { createUserValidation, updateUserValidation, updateAvatarValidation } = require('../validators/validators');
+const { createUserHandler, updateUserHandler, updateAvatarHandler } = require('../modules/error-handlers');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -39,7 +39,7 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      createUserValidation(err, next);
+      createUserHandler(err, next);
     });
 };
 
@@ -69,7 +69,7 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, opts)
     .then(() => res.send({ message: 'Данные пользователя обновлены' }))
     .catch((err) => {
-      updateUserValidation(err, next);
+      updateUserHandler(err, next);
     });
 };
 
@@ -81,6 +81,6 @@ module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, opts)
     .then(() => res.send({ message: 'Аватар пользователя изменен' }))
     .catch((err) => {
-      updateAvatarValidation(err, next);
+      updateAvatarHandler(err, next);
     });
 };
