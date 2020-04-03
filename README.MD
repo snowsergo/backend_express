@@ -2,14 +2,33 @@
 Учебный сервер на express
 
 ## Текущая версия
-3.0.0
+3.0.2
+
+## Ссылки на приложение
+- [https://www.snowsergo-mesto.tk](https://www.snowsergo-mesto.tk)
+- [https://snowsergo-mesto.tk](https://snowsergo-mesto.tk)
+- [http://84.201.145.27](http://84.201.145.27)
+
+## Адреса для отправки запросов
+- [https://www.api.snowsergo-mesto.tk](https://www.api.snowsergo-mesto.tk)
+- [https://api.snowsergo-mesto.tk](https://api.snowsergo-mesto.tk)
 
 ## Функционол
+
+### version 3.0.2
+- добавлена централизованная обработка ошибок
+- валидированы запросы
+- добавленно логгирование ошибок и запросов в файл
+
+### version 3.0.1
+- исправлены статусы ошибок
+- исправлена валидация аватара
+
 
 ### version 3.0.0
 - добавлена аутентификация по email и password
 - добавлена авторизация по jwt токену который приходит в http куке
-- улучшена безопасность 
+- улучшена безопасность
 
 
 ### version 2.0.0

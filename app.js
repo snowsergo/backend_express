@@ -8,6 +8,8 @@ const cookieParser = require('cookie-parser'); // для работы с кук�
 const morgan = require('morgan'); // для логов
 const mongoose = require('mongoose'); // для работы с базой данных
 const bodyParser = require('body-parser');// подключили body-parser
+const { errors } = require('celebrate');
+const { userSignin, userSignup } = require('./modules/validators');
 const config = require('./config.js'); //  в этом файле временная база данных в формате json
 
 const { PORT } = config;
@@ -15,6 +17,8 @@ const routerusers = require('./routes/users.js');
 const routercards = require('./routes/cards.js');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+
 
 const errorMiddleware = require('./middlewares/error.js');
 
@@ -40,23 +44,43 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-// логгирование
+// логгирование в командной строке
 app.use(morgan('combined'));
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+// подключаем логгер запросов в файл
+app.use(requestLogger);
 
+// для краш-теста сервера (удалить после ревью)
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
+// пользовательский вход, получаем токен
+app.post('/signin', userSignin, login);
+
+// создаем нового пользователя
+app.post('/signup', userSignup, createUser);
+
+// аутентификация пользователя перед всеми роутами
 app.use(auth);
 
 app.use('/users', routerusers);
 app.use('/cards', routercards);
 
 // запрос на несуществующий адрес
-app.all('*', (req, res, next) => next({
-  status: 404,
-  message: { message: 'Запрашиваемый ресурс не найден' },
-}));
+app.all('*', (req, res) => {
+  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+});
 
+// подключаем логгер ошибок в файл
+app.use(errorLogger);
+
+// обработчики ошибок
+app.use(errors()); // обработчик ошибок celebrate
+
+// наш централизованный обработчик ошибок
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {

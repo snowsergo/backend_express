@@ -1,16 +1,31 @@
 const router = require('express').Router(); // создали роутер
-// const fs = require('fs');
-// const fsPromises = require('fs').promises;
-// const config = require('../config.js');
+const { celebrate, Joi } = require('celebrate'); // подключили валидацию
 const {
-// createUser,
   getAllUsers, getUser, updateUser, updateAvatar,
 } = require('../controllers/users');
 
 router.get('/', getAllUsers);
-router.get('/:userId', getUser);
-// router.post('/', createUser); //   5e63a876b704d81c746b9488 для временного решения
-router.patch('/me', updateUser); // обновление данных профиля
-router.patch('/me/avatar', updateAvatar); // обновление аватара
+
+router.get('/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().alphanum().length(24),
+  }),
+}), getUser);
+
+// обновление данных профиля
+router.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}),
+updateUser);
+
+
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().min(12),
+  }),
+}), updateAvatar); // обновление аватара
 
 module.exports = router;
