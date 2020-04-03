@@ -7,7 +7,7 @@
 ## Ссылки на приложение
 - [https://www.snowsergo-mesto.tk](https://www.snowsergo-mesto.tk)
 - [https://snowsergo-mesto.tk](https://snowsergo-mesto.tk)
-- [http://84.201.147.1](http://84.201.147.1)
+- [http://84.201.145.27](http://84.201.145.27)
 
 ## Адреса для отправки запросов
 - [https://www.api.snowsergo-mesto.tk](https://www.api.snowsergo-mesto.tk)
